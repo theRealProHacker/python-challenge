@@ -41,16 +41,11 @@ Task 2 - snake_case to cameCase
 
 from typing import Any
 
-def get_match_from_wasted_match(match: re.Match):
-    """ This gets the actual matched string from the totally useless match object that noone ever needs. 
-    The only thing you'll ever need is the matched string. """
-    return match.string[match.start():match.end()]
-
 def camelize(key: str)->str:
     """Takes string in snake_case format and returns camelCase formatted version."""
     # Write your code below
-    pattern = re.compile(r"_.") # any underscore followed by any character
-    key = re.sub(pattern,lambda match: get_match_from_wasted_match(match)[1].upper(), key) #we replace with a capital letter
+    pattern = re.compile(r"(_.)") # any underscore followed by any character
+    key = re.sub(pattern,lambda match: match.groups(0)[0][1].upper(), key) #we replace with a capital letter
     return key
 
 
@@ -141,11 +136,9 @@ def task3_action(request: ActionRequest):
     # Nothing crazy like NLP. 
     # But if I had a dictionary or so it would be pretty easy to find out what words are likely names 
     # also a frequency dict could be good for filtering out unimportant words and finding the most important ones. 
-    if request.username not in friends: #unknown user
-        return {
-            "message":f"Hi {request.username}, I don't know you yet. But I would love to meet you!"
-            }
-    else:
+    
+    message = f"Hi {request.username}, I don't know you yet. But I would love to meet you!" #unknown user
+    if request.username in friends:
         handler: handle = handle_unknown_action
         ws = words(request.action)
         for keys,func in options:
@@ -153,9 +146,8 @@ def task3_action(request: ActionRequest):
                 if k in ws:
                     handler = func
                     break # very simple, in reality we would give every possible handler a likeliness score
-        return {
-            "message":handler(request)
-            }
+        message = handler(request)
+    return {"message":message}
 
 
 """
