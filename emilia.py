@@ -36,7 +36,7 @@ async def task1_greet(name: str, language: str = "de") -> str:
 
 
 """
-Task 2 - snake_case to cameCase
+Task 2 - snake_case to camelCase
 """
 
 from typing import Any
@@ -76,21 +76,26 @@ class ActionResponse(BaseModel):
     message: str
 
 
+from string import punctuation
+from typing import Callable
+
+def delete_chars(text: str, chars: list[str])-> str:
+    for char in chars:
+        text = text.replace(char, "")
+        return text
+def words(text: str)->list[str]: # a bit like tokenization. But the stemming is missing. Which might be especially useful for eg: Remind/reminder
+    text = delete_chars(text, punctuation).lower()
+    return text.split(" ") # instead of just a regular split
+
 def handle_call_action(request: ActionRequest)->str:
     # Write your code below
-    from string import punctuation
-    def delete_chars(text: str, chars: list[str])-> str:
-        for char in chars:
-            text = text.replace(char, "")
-            return text
     for name in friends[request.username]:
         if name in request.action:
             return f"🤙 Calling {name} ..."
     enum = list(enumerate(request.action.split(" ")))
     for i,name in enum:
-        if not i==0:
-            if not enum[i-1][-1]=="." and name[0].isupper():
-                print("Very likely a name (at least in English):", delete_chars(name, punctuation))
+        if not i==0 and not enum[i-1][1][-1]=="." and name.istitle():
+            print("Very likely a name (at least in English):", delete_chars(name, punctuation))
     return f"{request.username}, I can't find this person in your contacts."
 
 
@@ -117,15 +122,6 @@ def task3_action(request: ActionRequest):
     """Accepts an action request, recognizes its intent and forwards it to the corresponding action handler."""
     # tip: you have to use the response model above and also might change the signature
     # of the action handlers
-    from string import punctuation
-    from typing import Callable
-    def delete_chars(text: str, chars: list[str])-> str:
-        for char in chars:
-            text = text.replace(char, "")
-            return text
-    def words(text: str)->list[str]: # a bit like tokenization. But the stemming is missing. Which might be especially useful for eg: Remind/reminder
-        text = delete_chars(text, punctuation).lower()
-        return text.split(" ") # instead of just a regular split
     handle = Callable[[ActionRequest],str]
     options: list[tuple[list[str],handle]]=[
         (["call"],handle_call_action),
